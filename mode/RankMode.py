@@ -1,0 +1,71 @@
+from utils import *
+
+
+class ToRankMode:
+    def __init__(self, rm, rc, d, p, sp='img', lc=None, res=None):
+        # 筛选类变量
+        self.like_count = lc
+        self.resolution = res
+        # 初始设置类变量
+        self.save_path = sp
+        self.datetime = f"&date={d}"
+        self.page = p
+        self.url = rank_url + \
+                   rank_mode[rm] + \
+                   rank_content[rc]
+        self.url = self.url + self.datetime if d != None else self.url
+
+        # 启动函数
+        self.run()
+
+    def run(self):
+        start_page = 1 if self.page == None else self.page[0]
+        end_page = 2 if self.page == None else self.page[1] + 1
+        for i in range(start_page, end_page):
+            url = self.url + f"&p={i}"
+            response = get_response(url).text
+            reslut = re.findall('<section id.*?/section>', response)  # 图片概览页
+            for test in reslut:
+                message = re.findall('data-rank="(\d*)".*data-title="(.*?)".*data-id="(.*?)".*(/artworks/\d*?)"', test)
+                print(f"排名{message[0][0]}")
+                img_detail_page = f"https://www.pixiv.net/artworks/{message[0][2]}"  # 可以在详情页查看作品的信息
+                target_html = f"https://www.pixiv.net/ajax/illust/{message[0][2]}/pages?lang=zh"  # 对于详情页有N张图片的情况可以展开
+                img_all = get_response(target_html).text  # 图片详情页
+                img_original = re.findall('"original":"(.*?)"', img_all)
+                img_data = get_image_data(img_detail_page)
+                if not self.filter(img_data):
+                    continue
+                count = 0
+                for img in img_original:
+                    count += 1
+                    img = img.replace('\/', '/')
+                    print(f"{img_data['name']}  : {img}")
+                    check_image_resolution(img)
+                    download(img, f"{self.save_path}/{message[0][0]}_{message[0][1]}_{count}.jpg")
+                print('\n')
+    def filter(self, img_data):
+        """
+        功能:如果满足条件则选择下载,否则跳过
+        :param img_data: dict of image message
+        :return: booling
+        """
+        if self.like_count != None:
+            if not isinstance(self.like_count, int):
+                print("like_count输入类型错误")
+                exit()
+            else:
+                if int(img_data["likeCount"]) < self.like_count:
+                    print(f"{img_data['name']}喜欢数为{img_data['likeCount']},小于设定值,跳过该图片")
+                    return False
+        if self.resolution != None:
+            if not isinstance(self.resolution, str):
+                print("like_count输入类型错误")
+                exit()
+            else:
+                stand = {'1080': 1920 * 1080, '2k': 2560 * 1440, '4k': 3840 * 2160}
+                if int(img_data['width']) * int(img_data['height']) < stand[self.resolution]:
+                    print(f"{img_data['name']}\t分辨率为{int(img_data['width'])}X{int(img_data['height'])},小于设定值,跳过该图片")
+                    return False
+
+        return True
+
