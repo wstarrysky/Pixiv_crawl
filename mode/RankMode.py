@@ -1,28 +1,40 @@
+import copy
+import datetime
+
 from utils import *
 
 
 class ToRankMode:
     def __init__(self, rm, rc, d, p, sp='img', lc=None, res=None):
+        if d:
+            start_day = input("输入开始日期(年-月-日)")
+            end_day = input("输入截止日期(年-月-日)")
+            date_mode = input("输入日期计算方式(day、weekly、monthly)")
+            self.date_list = self.get_datelist(start_day, end_day, mode=date_mode)
         # 筛选类变量
         self.like_count = lc
         self.resolution = res
         # 初始设置类变量
         self.save_path = sp
-        self.datetime = f"&date={d}"
         self.page = p
         self.url = rank_url + \
                    rank_mode[rm] + \
                    rank_content[rc]
-        self.url = self.url + self.datetime if d != None else self.url
-
+        self.d = d
         # 启动函数
-        self.run()
+        if d:
+            for dt in self.date_list:
+                self.temp_url = copy.deepcopy(self.url) + f"&date={dt}"
+                self.run()
+        else:
+            self.run()
 
     def run(self):
         start_page = 1 if self.page == None else self.page[0]
         end_page = 2 if self.page == None else self.page[1] + 1
         for i in range(start_page, end_page):
-            url = self.url + f"&p={i}"
+            url = self.url + f"&p={i}" if not self.d else self.temp_url+f"&p={i}"
+            print(url)
             response = get_response(url).text
             reslut = re.findall('<section id.*?/section>', response)  # 图片概览页
             for test in reslut:
@@ -41,8 +53,9 @@ class ToRankMode:
                     img = img.replace('\/', '/')
                     print(f"{img_data['name']}  : {img}")
                     check_image_resolution(img)
-                    download(img, f"{self.save_path}/{message[0][0]}_{message[0][1]}_{count}.jpg")
+                    # download(img, f"{self.save_path}/{message[0][0]}_{message[0][1]}_{count}.jpg")
                 print('\n')
+
     def filter(self, img_data):
         """
         功能:如果满足条件则选择下载,否则跳过
@@ -66,6 +79,17 @@ class ToRankMode:
                 if int(img_data['width']) * int(img_data['height']) < stand[self.resolution]:
                     print(f"{img_data['name']}\t分辨率为{int(img_data['width'])}X{int(img_data['height'])},小于设定值,跳过该图片")
                     return False
-
         return True
 
+    def get_datelist(self, start_day, end_day, mode="day"):
+        num = {'day': 1,
+               'weekly': 7,
+               'monthly': 30
+               }
+        datestart = datetime.datetime.strptime(start_day, '%Y-%m-%d')
+        dateend = datetime.datetime.strptime(end_day, '%Y-%m-%d')
+        date_list = []
+        while datestart <= dateend:
+            date_list.append(dateend.strftime('%Y-%m-%d').replace('-', ''))
+            dateend -= datetime.timedelta(days=num[mode])
+        return date_list
