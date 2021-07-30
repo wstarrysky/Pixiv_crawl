@@ -7,7 +7,7 @@ import time
 
 
 class ToRankMode:
-    # todo 排行榜模式设置在此文件
+    # todo 排行榜下载模式在此文件
     def __init__(self, rm, rc, d, p, sp='img', lc=None, res=None):
         if d:
             start_day = input("输入开始日期(年-月-日)")
