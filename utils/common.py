@@ -4,30 +4,26 @@ import os
 import re
 from utils.config import *
 
-'''
-排行榜模式选择
-1、 每日排行榜  格式:
-https://www.pixiv.net/ranking.php?mode=daily&content=illust&date=20210727&p=2
-2、 周排行榜   格式:
-https://www.pixiv.net/ranking.php?mode=weekly&content=illust&date=20210727&p=2
-3、每月排行榜   格式:
-https://www.pixiv.net/ranking.php?mode=monthly&content=illust&date=20210726&p=2
-'''
 
-
-def get_response(html_url, stream=None, timeout=None):
-    response = requests.get(url=html_url, headers=headers, proxies=proxies, stream=stream, timeout=timeout)
+def get_response(html_url, stream=None, timeout=None, off=False):
+    if off == True:
+        s = requests.session()
+        s.keep_alive = False  # 关闭多余连接
+    response = requests.get(url=html_url, headers=headers, proxies=proxies, stream=stream, timeout=timeout
+                            )
     return response
 
 
 def download(url, filename):
     if not os.path.exists(os.path.split(filename)[0]):
         os.makedirs(os.path.split(filename)[0])
-    r = get_response(url, stream=True, timeout=60)
+    r = get_response(url, stream=True, timeout=60, off=True)
     r.raise_for_status()
-    with open(filename, 'wb') as f:
+    filename = re.sub('[\\\\:*?\"<>|]', '', filename)  # 替换非法字符
+    with open(f"{filename}", 'wb') as f:
         for chunk in r.iter_content(chunk_size=1024):
             if chunk:  # filter out keep-alive new chunks
+                f.seek(0, 2)
                 f.write(chunk)
                 f.flush()
 

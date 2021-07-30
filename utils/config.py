@@ -1,9 +1,14 @@
+import requests.adapters
+
 username = '2536187511'
 password = '12345678Qwer..'
 cookie = '62173541_1HKrL4dJ2vZcZ5b3EPvGO2vOHovNXtP7 '
 
+requests.adapters.DEFAULT_RETRIES = 3  # 设置默认重连次数
+
 headers = {
     'Referer': "https://www.pixiv.net/",  # p站需要开了请求头才能够进行下载
+    'Connection': 'close',
     'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.137 '
                   'Safari/537.36 LBBROWSER ',
     'username': username, 'password': password,

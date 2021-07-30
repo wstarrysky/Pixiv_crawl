@@ -1,10 +1,13 @@
 import copy
 import datetime
+import re
 
 from utils import *
+import time
 
 
 class ToRankMode:
+    # todo 排行榜模式设置在此文件
     def __init__(self, rm, rc, d, p, sp='img', lc=None, res=None):
         if d:
             start_day = input("输入开始日期(年-月-日)")
@@ -17,25 +20,30 @@ class ToRankMode:
         # 初始设置类变量
         self.save_path = sp
         self.page = p
+        self.d = d
+        self.date = "&date=" + (datetime.datetime.now() +
+                                datetime.timedelta(days=-1)).strftime('%Y-%m-%d').replace('-', '')
         self.url = rank_url + \
                    rank_mode[rm] + \
                    rank_content[rc]
-        self.d = d
+
         # 启动函数
         if d:
             for dt in self.date_list:
                 self.temp_url = copy.deepcopy(self.url) + f"&date={dt}"
                 self.run()
         else:
+            self.url = self.url + self.date
             self.run()
 
     def run(self):
         start_page = 1 if self.page == None else self.page[0]
         end_page = 2 if self.page == None else self.page[1] + 1
         for i in range(start_page, end_page):
-            url = self.url + f"&p={i}" if not self.d else self.temp_url+f"&p={i}"
+            url = self.url + f"&p={i}" if not self.d else self.temp_url + f"&p={i}"
             print(url)
-            response = get_response(url).text
+            date = eval(re.findall('\d{8}', url)[0])
+            response = get_response(url, off=True).text
             reslut = re.findall('<section id.*?/section>', response)  # 图片概览页
             for test in reslut:
                 message = re.findall('data-rank="(\d*)".*data-title="(.*?)".*data-id="(.*?)".*(/artworks/\d*?)"', test)
@@ -49,11 +57,15 @@ class ToRankMode:
                     continue
                 count = 0
                 for img in img_original:
+                    #  对于综合内容中不想下载排行榜的小说,跳过
+                    if len(img_original) > 1:
+                        break
                     count += 1
                     img = img.replace('\/', '/')
                     print(f"{img_data['name']}  : {img}")
                     check_image_resolution(img)
-                    # download(img, f"{self.save_path}/{message[0][0]}_{message[0][1]}_{count}.jpg")
+                    download(img, fr"{self.save_path}/{date}/{message[0][0]}_{message[0][1]}_{count}.jpg")
+                    # time.sleep(2)
                 print('\n')
 
     def filter(self, img_data):
