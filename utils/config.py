@@ -1,4 +1,7 @@
 import requests.adapters
+from fake_useragent import UserAgent
+
+ua = UserAgent()
 
 username = '2536187511'
 password = '12345678Qwer..'
@@ -6,19 +9,32 @@ cookie = '62173541_1HKrL4dJ2vZcZ5b3EPvGO2vOHovNXtP7 '
 
 requests.adapters.DEFAULT_RETRIES = 3  # 设置默认重连次数
 
+
+
+# # 非随机UA设置
+# headers = {
+#     'Referer': "https://www.pixiv.net/",  # p站需要开了请求头才能够进行下载
+#     'Connection': 'close',
+#     'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.137 '
+#                   'Safari/537.36 LBBROWSER ',
+#     'username': username, 'password': password,
+#     'Cookie': cookie
+# }
+# 随机UA设置
 headers = {
     'Referer': "https://www.pixiv.net/",  # p站需要开了请求头才能够进行下载
     'Connection': 'close',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.137 '
-                  'Safari/537.36 LBBROWSER ',
+    'User-Agent': str(ua.random),
     'username': username, 'password': password,
     'Cookie': cookie
 }
 
 proxies = {'http': 'http://127.0.0.1:1080', 'https': 'http://127.0.0.1:1080'}
-'''*********************************************************'''
-Pixiv = "https://www.pixiv.net/"
 
+'''************************aio设置******************************'''
+Pixiv = "https://www.pixiv.net/"
+proxy ='http://127.0.0.1:1080'
+cookies = {'cookie':'62173541_1HKrL4dJ2vZcZ5b3EPvGO2vOHovNXtP7'}
 '''*********************************************************'''
 """
 排行榜模式  标签模式  收藏模式
@@ -29,7 +45,9 @@ mode = ['rank',
         ]
 
 '''*********************************************************'''
-rank_url = "https://www.pixiv.net/ranking.php"
+
+TAGS_URL = "https://www.pixiv.net/tags/"
+
 
 page = f"&p={3}"
 """
