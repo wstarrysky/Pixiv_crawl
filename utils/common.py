@@ -5,6 +5,9 @@ import aiohttp
 import requests
 import os
 import re
+
+from colorama import Fore, Back, Style
+
 from utils.config import *
 
 '''
@@ -121,3 +124,19 @@ def get_imgId(page_json):
     page_illust = page_json['body']['illust']
     page_data = page_illust['data']
     return page_data
+
+def display_head(mode):
+    PADDING = 70
+    print("┌" + "".ljust(PADDING - 2, "─") + "┐")
+    print(
+        "│ " + Fore.YELLOW + Back.BLACK + Style.BRIGHT + f"Pixiv_Crawl version {1}".ljust(
+            PADDING - 3, " ") + Style.RESET_ALL + "│")
+    print("│ " + Fore.CYAN + Back.BLACK + Style.BRIGHT + '------starry sky------'.ljust(PADDING - 3,
+                                                                                        " ") + Style.RESET_ALL + "│")
+    print(
+        "│ " + Fore.YELLOW + Back.BLACK + Style.BRIGHT + f"GitHub adress: {Fore.CYAN}{Style.BRIGHT}https://github.com/wstarrysky/Pixiv_crawl.git".ljust(
+            PADDING + 6, " ") + Style.RESET_ALL + "│")
+    print(
+        "│ " + Fore.LIGHTGREEN_EX + Back.BLACK + Style.BRIGHT + f"目前模式: {mode}".ljust(
+            PADDING-9, " ") + Style.RESET_ALL + "│")
+    print("└" + "".ljust(PADDING - 2, "─") + "┘")

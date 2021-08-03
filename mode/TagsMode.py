@@ -4,7 +4,7 @@ import datetime
 import os
 import re
 from tqdm import tqdm
-from utils import Menu
+from utils import Menu, InitSet
 from mode.ConfigMode import ConfigItem
 from utils.common import get_response, get_response_aio, get_imgId, download_aio
 from utils.config import *
@@ -27,21 +27,24 @@ from utils.config import *
 
 class TagsMode:
     # todo 标签下载模式在此文件
-    __items = [
-        ConfigItem("searchCondition", "bookmarkCount", True),  # 是否启用收藏筛选模式
-        ConfigItem("searchCondition", "order", True),  # 是否按照最新排序(否:最旧排序)
-        ConfigItem("searchCondition", "page", True),  # 是否需要指定页数(默认第一页)
-        ConfigItem("searchCondition", "sectionTag", True),  # 是否启用部分标签
-        ConfigItem("searchCondition", "illType", False),  # 是否需要选取动图
-        ConfigItem("searchCondition", "resolution", False),  # 是否启用清晰度筛选
-        ConfigItem("searchCondition", "ratio", False),  # 是否对横纵比进行筛选
-        ConfigItem("searchCondition", "save_folder", 'tags'),  # 指定储存文件夹
 
-        # ConfigItem("searchCondition", "DataTime", False),  # 是否对时间进行筛选
-    ]
 
     # https://www.pixiv.net/ajax/search/illustrations/FGO?word=FGO&order=date_d&mode=all&p=1&s_mode=s_tag&type=illust_and_ugoira&lang=zh
     def __init__(self):
+        init = InitSet("tags")
+        __items = [
+            ConfigItem("searchCondition", "bookmarkCount", init.tags_default_init['bookmarkCount']),  # 是否启用收藏筛选模式
+            ConfigItem("searchCondition", "order", init.tags_default_init['order']),  # 是否按照最新排序(否:最旧排序)
+            ConfigItem("searchCondition", "page", init.tags_default_init['page']),  # 是否需要指定页数(默认第一页)
+            ConfigItem("searchCondition", "sectionTag", init.tags_default_init['sectionTag']),  # 是否启用部分标签
+            ConfigItem("searchCondition", "illType", init.tags_default_init['illType']),  # 是否需要选取动图
+            ConfigItem("searchCondition", "resolution", init.tags_default_init['resolution']),  # 是否启用清晰度筛选
+            ConfigItem("searchCondition", "ratio", init.tags_default_init['ratio']),  # 是否对横纵比进行筛选
+            ConfigItem("searchCondition", "save_folder", init.tags_default_init['save_folder']),  # 指定储存文件夹
+            ConfigItem("searchCondition", "semaphore", init.tags_default_init["semaphore"]),  # 设置最大同时下载数,默认10
+
+            # ConfigItem("searchCondition", "DataTime", False),  # 是否对时间进行筛选
+        ]
         self._base_url = "https://www.pixiv.net/ajax/search/illustrations/"
         for item in self.__items:
             setattr(self, item.option, item.process_value(item.default))
@@ -58,17 +61,15 @@ class TagsMode:
             self.tempUrl = self.target_url + page
             print(self.tempUrl)
             page_json = get_response(self.tempUrl).json()
-            count = 0
             img_original_json_url_list = []
             for img_data in tqdm(get_imgId(page_json)):
-                count += 1
                 try:
                     img_original_json_url = f"https://www.pixiv.net/ajax/illust/{img_data['id']}"
                     img_original_json_url_list.append(img_original_json_url)
                 except:
                     continue
             loop = asyncio.get_event_loop()
-            semaphore = asyncio.Semaphore(10)  # 设置并发数
+            semaphore = asyncio.Semaphore(self.semaphore)  # 设置并发数
             tasks = []
             for i, url in enumerate(img_original_json_url_list):
                 task = asyncio.ensure_future(download_aio(url, semaphore, save_folder))

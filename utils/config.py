@@ -1,6 +1,10 @@
 import requests.adapters
 from fake_useragent import UserAgent
 
+CHECK_MODE_DATE = 0
+CHECK_MODE_INT_RANGE = 1
+CHECK_MODE_STR_LIST = 2
+
 ua = UserAgent()
 
 username = '2536187511'

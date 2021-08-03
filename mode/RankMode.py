@@ -1,36 +1,34 @@
 import asyncio
 import copy
-import datetime
-import re
 from tqdm import tqdm
 
 from mode.ConfigMode import ConfigItem
 from utils import *
-import time
 
 
 class ToRankMode:
     # todo 排行榜下载模式在此文件
-    __items = [
-        ConfigItem("searchCondition", "DateTime", True),  # 是否对时间进行筛选
-        ConfigItem("searchCondition", "page", False),  # 是否需要指定页数(默认第一页)
-        ConfigItem("searchCondition", "save_folder", 'rank'),  # 指定储存文件夹
-        ConfigItem("searchCondition", "rank_mode", '受男性欢迎'),  # 选择排行榜内容
-        #  '''['今日','本周','本月','新人','受男性欢迎','受女性欢迎'](只有选择综合内容(all)才有(受男/女性欢迎模式)"'''
-        ConfigItem("searchCondition", "rank_content", 'all'),  # 选择:['all','illustration','gif']
-    ]
 
     def __init__(self):
+        init = InitSet("rank")
+        self.__items = [
+            ConfigItem("searchCondition", "DateTime", init.rank_default_init["DateTime"]),  # 是否对时间进行筛选
+            ConfigItem("searchCondition", "page", init.rank_default_init["page"]),  # 是否需要指定页数(默认第一页)
+            ConfigItem("searchCondition", "save_folder", init.rank_default_init["save_folder"]),  # 指定储存文件夹
+            ConfigItem("searchCondition", "rank_content", init.rank_default_init["rank_content"]),
+            # 选择:['all','illustration','gif']
+            ConfigItem("searchCondition", "rank_mode", init.rank_default_init["rank_mode"]),  # 选择排行榜内容
+            #  '''['今日','本周','本月','新人','受男性欢迎','受女性欢迎'](只有选择综合内容(all)才有(受男/女性欢迎模式)"'''
+            ConfigItem("searchCondition", "semaphore", init.rank_default_init["semaphore"]),  # 设置最大同时下载数,默认10
+
+        ]
         RANK_URL = "https://www.pixiv.net/ranking.php"
         for item in self.__items:
             setattr(self, item.option, item.process_value(item.default))
         self.result = Menu(self, mode='rank')
-
         self.date = "&date=" + (datetime.datetime.now() +
                                 datetime.timedelta(days=-1)).strftime('%Y-%m-%d').replace('-', '')
-
         self.url = RANK_URL + self.result.rank_mode + self.result.rank_content
-
         # 启动函数
         if self.DateTime:
             for dt in self.result.dateList:
@@ -42,7 +40,7 @@ class ToRankMode:
 
     def run(self):
         loop = asyncio.get_event_loop()
-        semaphore = asyncio.Semaphore(10)  # 设置并发数
+        semaphore = asyncio.Semaphore(self.semaphore)  # 设置并发数
         tasks = []
         for page in self.result.pageList:
             url = self.url + page + "&format=json" if not self.DateTime else self.temp_url + page + "&format=json"
@@ -83,3 +81,5 @@ class ToRankMode:
     #                 print(f"{img_data['name']}\t分辨率为{int(img_data['width'])}X{int(img_data['height'])},小于设定值,跳过该图片")
     #                 return False
     #     return True
+    def init(self):
+        pass
