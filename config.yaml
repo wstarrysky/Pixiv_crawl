@@ -1,0 +1,9 @@
+#
+setting:
+  {
+    UA : Flase,    # 是否使用随机ua
+    username : '2536187511@qq.com', # 用户名
+    password : '12345678Qwer..',   # 密码
+    cookie : '62173541_1HKrL4dJ2vZcZ5b3EPvGO2vOHovNXtP7 ',  # cookie
+    proxy : 'http://127.0.0.1:1080', # 代理地址
+   }

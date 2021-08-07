@@ -85,7 +85,8 @@ class InitSet:
                                   "illType": False,
                                   "resolution": False,
                                   "ratio": False,
-                                  "save_folder": 'tags'
+                                  "save_folder": 'tags',
+                                  "semaphore": 10,
                                   }
         self.id_default_init = {"idlist": False,
                                 "read_folder": 'id_download.txt',
@@ -114,7 +115,7 @@ class InitSet:
         juge = self.check.input('\n使用默认方式请按Y,需要更改请按N\n输入:', check_mode=CHECK_MODE_STR_LIST,
                                 str_list=['Y', 'y', 'N', 'n'])
         if juge in ['Y', 'y']:
-            return None
+            return self.rank_default_init
         elif juge in ['N', 'n']:
             while True:
                 re = self.check.input('选择需要更改的内容', check_mode=CHECK_MODE_INT_RANGE, min_val=1, max_val=6)

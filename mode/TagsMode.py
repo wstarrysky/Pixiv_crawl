@@ -32,7 +32,7 @@ class TagsMode:
     # https://www.pixiv.net/ajax/search/illustrations/FGO?word=FGO&order=date_d&mode=all&p=1&s_mode=s_tag&type=illust_and_ugoira&lang=zh
     def __init__(self):
         init = InitSet("tags")
-        __items = [
+        self.__items = [
             ConfigItem("searchCondition", "bookmarkCount", init.tags_default_init['bookmarkCount']),  # 是否启用收藏筛选模式
             ConfigItem("searchCondition", "order", init.tags_default_init['order']),  # 是否按照最新排序(否:最旧排序)
             ConfigItem("searchCondition", "page", init.tags_default_init['page']),  # 是否需要指定页数(默认第一页)

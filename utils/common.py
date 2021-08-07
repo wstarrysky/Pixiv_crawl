@@ -134,9 +134,12 @@ def display_head(mode):
     print("│ " + Fore.CYAN + Back.BLACK + Style.BRIGHT + '------starry sky------'.ljust(PADDING - 3,
                                                                                         " ") + Style.RESET_ALL + "│")
     print(
-        "│ " + Fore.YELLOW + Back.BLACK + Style.BRIGHT + f"GitHub adress: {Fore.CYAN}{Style.BRIGHT}https://github.com/wstarrysky/Pixiv_crawl.git".ljust(
-            PADDING + 6, " ") + Style.RESET_ALL + "│")
+        "│ " + Fore.YELLOW + Back.BLACK + Style.BRIGHT + f"开发宗旨: {Fore.CYAN}{Style.BRIGHT}仅供学习交流使用,请勿商用".ljust(
+            PADDING-4, " ") + Style.RESET_ALL + "│")
+    print(
+        "│ " + Fore.YELLOW + Back.BLACK + Style.BRIGHT + f"         {Fore.CYAN}{Style.BRIGHT}学习之外,请支持正版!!!".ljust(
+            PADDING, " ") + Style.RESET_ALL + "│")
     print(
         "│ " + Fore.LIGHTGREEN_EX + Back.BLACK + Style.BRIGHT + f"目前模式: {mode}".ljust(
-            PADDING-9, " ") + Style.RESET_ALL + "│")
+            PADDING-7, " ") + Style.RESET_ALL + "│")
     print("└" + "".ljust(PADDING - 2, "─") + "┘")
