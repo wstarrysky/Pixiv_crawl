@@ -53,13 +53,14 @@ class IDMode:
                 loop.run_until_complete(asyncio.wait(tasks))
         else:
             while True:
-                id = self.check.input('输入要下载的图片的id', check_mode=CHECK_MODE_INT_RANGE)
-                url = self._base_url + str(id)
+                id = input('输入要下载的图片的id')
+                id = re.findall('\d.{7,9}', id)
+                # url = self._base_url + str(id)
                 loop = asyncio.get_event_loop()
                 semaphore = asyncio.Semaphore(self.semaphore)  # 设置并发数
                 tasks = []
-                for i, url in enumerate([url]):
-                    task = asyncio.ensure_future(download_aio(url, semaphore, self.save_folder))
+                for i, url in enumerate([*id]):
+                    task = asyncio.ensure_future(download_aio(self._base_url+url, semaphore, self.save_folder))
                     # task.add_done_callback(callable)
                     tasks.append(task)
                 loop.run_until_complete(asyncio.wait(tasks))

@@ -4,7 +4,7 @@ import datetime
 import os
 import re
 from tqdm import tqdm
-from utils import Menu, InitSet
+from utils import Menu, InitSet, CheckInputFormat
 from mode.ConfigMode import ConfigItem
 from utils.common import get_response, get_response_aio, get_imgId, download_aio
 from utils.config import *
@@ -25,12 +25,11 @@ from utils.config import *
 # https://www.pixiv.net/ajax/search/illustrations/FGO?word=FGO&order=date&mode=all&p=1&s_mode=s_tag_full&type=illust_and_ugoira&wlt=1000&wgt=2999&hlt=1000&hgt=2999&lang=zh
 
 
-class TagsMode:
-    # todo 标签下载模式在此文件
-
+class TagsMode():
 
     # https://www.pixiv.net/ajax/search/illustrations/FGO?word=FGO&order=date_d&mode=all&p=1&s_mode=s_tag&type=illust_and_ugoira&lang=zh
     def __init__(self):
+        self.check = CheckInputFormat()
         init = InitSet("tags")
         self.__items = [
             ConfigItem("searchCondition", "bookmarkCount", init.tags_default_init['bookmarkCount']),  # 是否启用收藏筛选模式
@@ -48,14 +47,22 @@ class TagsMode:
         self._base_url = "https://www.pixiv.net/ajax/search/illustrations/"
         for item in self.__items:
             setattr(self, item.option, item.process_value(item.default))
+
         self.result = Menu(self, mode='tags')
-        self.target_url = self._base_url + self.result.tag + self.result.bookmarkCount + self.result.KeyWord + \
-                          self.result.order + self.result.sectionTag + self.result.illType + \
-                          self.result.resolution + self.result.ratio
+        self.target_url = self._get_target_url()
         self.run()
+
+
 
     # https://www.pixiv.net/ajax/search/illustrations/FGO%2010000users%E5%85%A5%E3%82%8A?word=FGO%2010000users%E5%85%A5%E3%82%8A&order=date_d&mode=all&p=1&s_mode=s_tag&type=illust_and_ugoira&lang=zh
     def run(self):
+        chenk_content = get_response(self.target_url).json()
+        while len(get_imgId(chenk_content)) == 0:
+            print("标签内容为空,请重新输入内容")
+            self.result.tag = input("输入标签:")
+            self.result.bookmarkCount = f"%20{self.check.input('输入最小收藏数量(整数):', CHECK_MODE_INT_RANGE)}users入り"
+            self.target_url = self._get_target_url()
+            chenk_content = get_response(self.target_url).json()
         for t, page in enumerate(self.result.pageList):
             save_folder = os.path.join(os.path.join(self.save_folder, self.result.tag), f"第{t + 1}页")
             self.tempUrl = self.target_url + page
@@ -76,6 +83,11 @@ class TagsMode:
                 # task.add_done_callback(callable)
                 tasks.append(task)
             loop.run_until_complete(asyncio.wait(tasks))
+
+    def _get_target_url(self):
+        return self._base_url + self.result.tag + self.result.bookmarkCount + self.result.KeyWord + \
+               self.result.order + self.result.sectionTag + self.result.illType + \
+               self.result.resolution + self.result.ratio
 
     def paser_tags_page(self):
         pass
